@@ -7,15 +7,15 @@ from pathlib import Path
 from PyInstaller.utils.hooks import collect_all
 
 # Workaround for Python 3.10.0 dis module bug (IndexError when scanning
-# bytecode compiled by newer Python). Patch _get_const_info to handle
-# out-of-range const indices gracefully.
-_original_get_const_info = dis._get_const_info
-def _patched_get_const_info(const_index, const_list):
-    try:
-        return _original_get_const_info(const_index, const_list)
-    except IndexError:
-        return const_index, repr(const_index)
-dis._get_const_info = _patched_get_const_info
+# bytecode compiled by newer Python). Only apply on Python 3.10.x.
+if sys.version_info[:2] == (3, 10):
+    _original_get_const_info = dis._get_const_info
+    def _patched_get_const_info(const_index, const_list):
+        try:
+            return _original_get_const_info(const_index, const_list)
+        except IndexError:
+            return const_index, repr(const_index)
+    dis._get_const_info = _patched_get_const_info
 
 block_cipher = None
 
